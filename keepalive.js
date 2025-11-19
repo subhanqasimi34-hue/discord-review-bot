@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const URL = controversial-mara-discordbot-review-7b1f8819.koyeb.app/; // Dein Koyeb / URL
+const URL = //controversial-mara-discordbot-review-7b1f8819.koyeb.app
 
 async function ping() {
     try {
