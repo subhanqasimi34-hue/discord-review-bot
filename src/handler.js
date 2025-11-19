@@ -2,12 +2,10 @@ export default async function handler(req, res) {
     try {
         const interaction = req.body;
 
-        // Discord Ping
         if (interaction.type === 1) {
             return res.status(200).json({ type: 1 });
         }
 
-        // Slash commands
         if (interaction.type === 2) {
             const command = interaction.data.name;
 
