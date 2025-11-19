@@ -1,0 +1,26 @@
+name: Keep Bot Alive
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # alle 5 Minuten
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Use Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install deps
+        run: npm install node-fetch
+
+      - name: Ping Koyeb
+        env:
+          KEEPALIVE_URL: ${{ secrets.KEEPALIVE_URL }}
+        run: node keepalive.js
