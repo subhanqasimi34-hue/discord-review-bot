@@ -1,27 +1,29 @@
 import express from "express";
-import handler from "./src/handler.js"; // falls vorhanden
+import handler from "./src/handler.js";
 import { verifyKeyMiddleware } from "discord-interactions";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-// korrekter DB import
-import connectDB from "./src/database/db.js"; 
+import connectDB from "./src/database/db.js";
 connectDB();
 
 const app = express();
+
+// Entfernen für /interactions → WICHTIG
 app.use(express.json());
 
-// Alive
+// Alive endpoint
 app.get("/", (req, res) => {
-    res.status(200).send("Bot is running via Koyeb.");
+  res.status(200).send("Bot is running via Koyeb.");
 });
 
-// Discord interactions
+// Richtiger Interactions-Endpoint ohne express.json()
 app.post(
-    "/interactions",
-    verifyKeyMiddleware(process.env.PUBLIC_KEY),
-    handler
+  "/interactions",
+  express.raw({ type: "*/*" }),       // ✨ RAW BODY, damit Discord unterschreiben kann
+  verifyKeyMiddleware(process.env.PUBLIC_KEY),
+  handler
 );
 
 const PORT = process.env.PORT || 3000;
