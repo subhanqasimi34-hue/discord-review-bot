@@ -5,26 +5,26 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import connectDB from "./src/database/db.js";
+import connectDB from "./src/database/db.js"; 
 connectDB();
 
 const app = express();
 
-// Entfernen für /interactions → WICHTIG
-app.use(express.json());
-
-// Alive endpoint
+// Nur hier JSON erlauben
 app.get("/", (req, res) => {
-  res.status(200).send("Bot is running via Koyeb.");
+    res.send("Bot running.");
 });
 
-// Richtiger Interactions-Endpoint ohne express.json()
+// Wichtig: KEIN express.json() vor /interactions !!!
+
 app.post(
-  "/interactions",
-  express.raw({ type: "*/*" }),       // ✨ RAW BODY, damit Discord unterschreiben kann
-  verifyKeyMiddleware(process.env.PUBLIC_KEY),
-  handler
+    "/interactions",
+    express.raw({ type: "application/json" }), // raw body
+    verifyKeyMiddleware(process.env.PUBLIC_KEY),
+    handler
 );
+
+app.use(express.json()); // alle anderen Routen
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server live on port ${PORT}`));
