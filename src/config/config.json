@@ -1,0 +1,41 @@
+{
+    "embedColors": {
+        "success": "#57F287",
+        "error": "#ED4245",
+        "info": "#5865F2",
+        "warning": "#FEE75C",
+        "rank": "#FFD700"
+    },
+
+    "xp": {
+        "perStar": 20,
+        "xpMultiplier": 1,
+        "levelMultiplier": 100
+    },
+
+    "emojis": {
+        "xpLeft": "<a:xp_left:123>",
+        "xpRight": "<a:xp_right:123>",
+        "star": "⭐",
+        "review": "📝",
+        "rankUp": "🎉",
+        "badge": "🎖",
+        "level": "📈"
+    },
+
+    "ranks": [
+        { "level": 1, "name": "🎯 Rookie Helper" },
+        { "level": 5, "name": "⚔️ Skilled Helper" },
+        { "level": 10, "name": "🛡️ Pro Helper" },
+        { "level": 15, "name": "🔥 Elite Helper" },
+        { "level": 25, "name": "👑 Master Helper" },
+        { "level": 40, "name": "🐉 Legendary Helper" }
+    ],
+
+    "badges": {
+        "reviewMaster": { "name": "🌟 Review Master", "requiredReviews": 25 },
+        "topRated": { "name": "✨ Top Rated", "minRating": 4.7 },
+        "serviceChampion": { "name": "🏅 Service Champion", "requiredReviews": 50 },
+        "fiveStarStreak": { "name": "💫 5-Star Streak", "minRating": 5 }
+    }
+}
