@@ -1,47 +1,41 @@
+import "dotenv/config";
 import express from "express";
 import { Client, GatewayIntentBits } from "discord.js";
 import { verifyKeyMiddleware } from "discord-interactions";
-import dotenv from "dotenv";
-import connectDB from "./src/database/db.js";
 import handler from "./src/handler.js";
+import connectDB from "./src/database/db.js";
 
-dotenv.config();
-
-// ----------------------------------------
-// 1) MongoDB
-// ----------------------------------------
-connectDB();
-
-// ----------------------------------------
-// 2) Discord Gateway Client (macht Bot ONLINE)
-// ----------------------------------------
+// --- 1) Start Gateway (Bot online) ---
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
 });
 
 client.once("ready", () => {
-    console.log(`🤖 Bot is online as ${client.user.tag}`);
+  console.log(`Bot online als ${client.user.tag}`);
 });
 
-client.login(process.env.TOKEN);
+client.login(process.env.BOT_TOKEN);
 
-// ----------------------------------------
-// 3) Express Webhook Server (/interactions)
-// ----------------------------------------
+// --- 2) Start Webserver (Slash Commands) ---
+connectDB();
+
 const app = express();
+app.use(express.json());
 
-// DISCORD BRAUCHT RAW BODY
+app.get("/", (req, res) => {
+  res.status(200).send("Bot is running on Koyeb");
+});
+
 app.post(
-    "/interactions",
-    express.raw({ type: "application/json" }),
-    verifyKeyMiddleware(process.env.PUBLIC_KEY),
-    handler
+  "/interactions",
+  verifyKeyMiddleware(process.env.PUBLIC_KEY),
+  handler
 );
 
-// Alive Check
-app.get("/", (req, res) => {
-    res.send("Bot + Webhook + Gateway are running on Koyeb.");
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🌐 Server läuft auf Port ${PORT}`));
+app.listen(process.env.PORT || 3000, () =>
+  console.log("Server live on port " + (process.env.PORT || 3000))
+);
