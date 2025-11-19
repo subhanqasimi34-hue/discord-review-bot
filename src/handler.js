@@ -1,30 +1,17 @@
-export default async function handler(req, res) {
-    try {
-        const interaction = req.body;
+export default function handler(req, res) {
+    console.log("✔️ Interaction received:", req.body);
 
-        if (interaction.type === 1) {
-            return res.status(200).json({ type: 1 });
-        }
-
-        if (interaction.type === 2) {
-            const command = interaction.data.name;
-
-            if (command === "ping") {
-                return res.status(200).json({
-                    type: 4,
-                    data: { content: "🏓 Pong!" }
-                });
-            }
-
-            return res.status(200).json({
-                type: 4,
-                data: { content: "Command not implemented yet." }
-            });
-        }
-
-        res.status(400).send("Unknown interaction type.");
-    } catch (err) {
-        console.error("Handler error:", err);
-        res.status(500).send("Internal error");
+    // Discord PING
+    if (req.body?.type === 1) {
+        console.log("✔️ Responding to PING");
+        return res.json({ type: 1 });
     }
+
+    // Für alle Commands – test response
+    return res.json({
+        type: 4,
+        data: {
+            content: "✔️ Handler reached! Your bot is online."
+        }
+    });
 }
