@@ -1,30 +1,28 @@
-import "./utils/database.js"; // lädt DB + Migrationen automatisch
 import express from "express";
+import handler from "./src/handler.js"; // falls vorhanden
 import { verifyKeyMiddleware } from "discord-interactions";
-import handler from "./handler.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+// korrekter DB import
+import connectDB from "./src/database/db.js"; 
+connectDB();
 
 const app = express();
 app.use(express.json());
 
-// Alive Check für Koyeb / UptimeRobot / Upptime
+// Alive
 app.get("/", (req, res) => {
-    res.status(200).json({
-        status: "online",
-        service: "discord-review-bot",
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString()
-    });
+    res.status(200).send("Bot is running via Koyeb.");
 });
 
-// Discord Webhook Endpoint
+// Discord interactions
 app.post(
     "/interactions",
     verifyKeyMiddleware(process.env.PUBLIC_KEY),
     handler
 );
 
-// Port für Koyeb
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Review Bot Webhook live on PORT ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server live on port ${PORT}`));
