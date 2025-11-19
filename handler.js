@@ -1,7 +1,7 @@
-import User from "./src/models/User.js";
-import Review from "./src/models/Review.js";
-import { rankFromLevel } from "./src/utils/rank.js";
-import { progressBar } from "./src/utils/progressBar.js";
+import User from "./models/User.js";
+import Review from "./models/Review.js";
+import { rankFromLevel } from "./utils/rank.js";
+import { progressBar } from "./utils/progressBar.js";
 
 export default async function handler(req, res) {
     const interaction = JSON.parse(req.body.toString());
@@ -71,63 +71,4 @@ export default async function handler(req, res) {
         const comment = commentOption?.value || "No comment provided.";
 
         // Save review
-        await Review.create({
-            reviewerId,
-            targetId,
-            guildId: interaction.guild_id,
-            stars,
-            category,
-            comment
-        });
-
-        // Update user stats
-        let user = await User.findOne({ userId: targetId });
-        if (!user) user = await User.create({ userId: targetId });
-
-        // XP system
-        const xpGain = stars * 20;
-        user.xp += xpGain;
-
-        // Update average rating
-        const allReviews = await Review.find({ targetId });
-        const avg =
-            allReviews.reduce((a, r) => a + r.stars, 0) / allReviews.length;
-
-        user.averageRating = avg;
-        user.reviewsCount = allReviews.length;
-
-        // Level up (1 level = each 100 XP)
-        user.level = Math.floor(user.xp / 100);
-
-        await user.save();
-
-        const rank = rankFromLevel(user.level);
-
-        return res.json({
-            type: 4,
-            data: {
-                embeds: [
-                    {
-                        title: "⭐ New Review Submitted",
-                        color: 0xFFD700,
-                        description: `**<@${reviewerId}>** reviewed **<@${targetId}>**`,
-                        fields: [
-                            { name: "Rating", value: "⭐".repeat(stars), inline: true },
-                            { name: "Category", value: category, inline: true },
-                            { name: "Comment", value: comment, inline: false },
-                            { name: "New Average", value: `${avg.toFixed(2)} ⭐`, inline: true },
-                            { name: "XP Earned", value: `${xpGain} XP`, inline: true },
-                            { name: "Rank", value: `${rank.emoji} ${rank.name}`, inline: true },
-                            { name: "Level", value: `${user.level}`, inline: true }
-                        ]
-                    }
-                ]
-            }
-        });
-    }
-
-    return res.json({
-        type: 4,
-        data: { content: "❌ Unknown command." }
-    });
-}
+        await Review.crea
