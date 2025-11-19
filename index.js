@@ -1,91 +1,47 @@
-require("dotenv").config();
-const fs = require("fs");
-const path = require("path");
-const {
-    Client,
-    GatewayIntentBits,
-    Collection,
-    REST,
-    Routes
-} = require("discord.js");
+import express from "express";
+import { Client, GatewayIntentBits } from "discord.js";
+import { verifyKeyMiddleware } from "discord-interactions";
+import dotenv from "dotenv";
+import connectDB from "./src/database/db.js";
+import handler from "./src/handler.js";
 
-const connectDB = require("./src/database/db");
+dotenv.config();
 
-// Discord Client
+// ----------------------------------------
+// 1) MongoDB
+// ----------------------------------------
+connectDB();
+
+// ----------------------------------------
+// 2) Discord Gateway Client (macht Bot ONLINE)
+// ----------------------------------------
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
 
-// Command Collection
-client.commands = new Collection();
-
-// Load commands from /src/commands
-const commandsPath = path.join(__dirname, "src/commands");
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
-const slashCommands = [];
-
-for (const file of commandFiles) {
-    const command = require(path.join(commandsPath, file));
-    if ("data" in command && "execute" in command) {
-        client.commands.set(command.data.name, command);
-        slashCommands.push(command.data.toJSON());
-        console.log(`✔ Loaded command: ${command.data.name}`);
-    } else {
-        console.log(`❌ Invalid command skipped: ${file}`);
-    }
-}
-
-client.once("ready", async () => {
-    console.log(`🤖 Logged in as ${client.user.tag}`);
-    
-    // Connect to MongoDB
-    await connectDB();
-
-    const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
-
-    try {
-        console.log("🧹 Clearing OLD commands...");
-        await rest.put(
-            Routes.applicationCommands(client.user.id),
-            { body: [] }
-        );
-
-        console.log("✨ Registering NEW commands...");
-        await rest.put(
-            Routes.applicationCommands(client.user.id),
-            { body: slashCommands }
-        );
-
-        console.log("✅ Commands registered!");
-    } catch (error) {
-        console.error("❌ Error uploading commands:", error);
-    }
+client.once("ready", () => {
+    console.log(`🤖 Bot is online as ${client.user.tag}`);
 });
 
-// Command Handler
-client.on("interactionCreate", async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+client.login(process.env.TOKEN);
 
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
+// ----------------------------------------
+// 3) Express Webhook Server (/interactions)
+// ----------------------------------------
+const app = express();
 
-    try {
-        await command.execute(interaction);
-    } catch (err) {
-        console.error(err);
-        if (interaction.replied || interaction.deferred) {
-            return interaction.followUp({
-                content: "There was an error while executing this command.",
-                flags: 64
-            });
-        }
+// DISCORD BRAUCHT RAW BODY
+app.post(
+    "/interactions",
+    express.raw({ type: "application/json" }),
+    verifyKeyMiddleware(process.env.PUBLIC_KEY),
+    handler
+);
 
-        return interaction.reply({
-            content: "There was an error while executing this command.",
-            flags: 64
-        });
-    }
+// Alive Check
+app.get("/", (req, res) => {
+    res.send("Bot + Webhook + Gateway are running on Koyeb.");
 });
 
-// Login
-client.login(process.env.DISCORD_TOKEN);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🌐 Server läuft auf Port ${PORT}`));
