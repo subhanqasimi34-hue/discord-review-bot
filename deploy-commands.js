@@ -1,38 +1,52 @@
+import "dotenv/config";
 import fetch from "node-fetch";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-const COMMANDS = [
+// Deine Commands hier eintragen
+const commands = [
     {
         name: "ping",
         description: "Replies with Pong!",
-        type: 1
+    },
+    {
+        name: "profil",
+        description: "Zeigt dein Profil an."
     }
 ];
 
+const DISCORD_APPLICATION_ID = process.env.APPLICATION_ID; 
+const DISCORD_BOT_TOKEN = process.env.BOT_TOKEN;
+
+if (!DISCORD_APPLICATION_ID || !DISCORD_BOT_TOKEN) {
+    console.error("❌ ERROR: APPLICATION_ID oder BOT_TOKEN fehlen in .env");
+    process.exit(1);
+}
+
 async function registerCommands() {
     try {
-        const url = `https://discord.com/api/v10/applications/${process.env.CLIENT_ID}/commands`;
+        console.log("📡 Registering slash commands...");
 
-        const response = await fetch(url, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bot ${process.env.BOT_TOKEN}`
-            },
-            body: JSON.stringify(COMMANDS)
-        });
+        const response = await fetch(
+            `https://discord.com/api/v10/applications/${DISCORD_APPLICATION_ID}/commands`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bot ${DISCORD_BOT_TOKEN}`
+                },
+                body: JSON.stringify(commands)
+            }
+        );
+
+        const data = await response.json();
 
         if (!response.ok) {
-            const text = await response.text();
-            console.error("❌ Discord API Error:", text);
+            console.error("❌ Fehler beim Registrieren:", data);
             return;
         }
 
         console.log("✅ Slash commands registered successfully!");
     } catch (err) {
-        console.error("❌ Failed to register commands:", err);
+        console.error("❌ ERROR:", err);
     }
 }
 
